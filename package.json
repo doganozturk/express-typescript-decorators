@@ -1,0 +1,24 @@
+{
+  "name": "typescript-decorators",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "tsc",
+    "compile:watch": "tsc --watch",
+    "start": "node dist/server.js",
+    "dev": "nodemon dist/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/express": "^4.17.2",
+    "@types/node": "^13.1.0",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.2",
+    "reflect-metadata": "^0.1.13",
+    "typescript": "^3.7.4"
+  }
+}
