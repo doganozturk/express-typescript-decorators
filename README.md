@@ -11,7 +11,7 @@ Bunca sözün ardından daha pratik bir yaklaşım ile temel olarak bazı decora
 Açıkçası anlatmaya başlayacağım bu örneğe benzer/yakın başka çalışmalar decorator'lerin pratik kullanımı açısından benim için ufuk açıcı oldu. Özellikle Node.js ve Express.js (yahut Koa, Fastify gibi diğer Node.js microframework'leri) özelinde uygulama geliştirme imkanınız olduysa buradaki yaklaşım sizler için de decorator'leri anlaşılır kılacaktır.
 
 Başlangıç uygulamamız temel TypeScript boilerplate'i üzerine çok basit bir Express.js örneği:
-
+```javascript
     import express, { Request, Response, Router } from "express";
     import bodyParser from 'body-parser';
     
@@ -77,11 +77,11 @@ Başlangıç uygulamamız temel TypeScript boilerplate'i üzerine çok basit bir
     app.listen(port, (): void => {
         console.log(`Server started on port ${port}`);
     });
-
+```
 Görüldüğü üzere iki controller'ımız var. Bunlar `/user` path'inde GET ve POST isteklerini karşılıyorlar.
 
 Kodumuz şu anki haliyle TypeScript uyumlu, çalıştırdığınızda TypeScript compiler'ı hata vermeyecektir; ancak tabii TypeScript kullanıyorsak kodumuzun daha az prosedürel, daha fazla OOP özellikleri taşımasını istiyor olmalıyız. Haliyle aklımıza şöyle bir API üzerinden controller'ı dizayn etmek ve yönetmek gelebilir:
-
+```javascript
     import { Request, Response } from "express";
     import { Controller, Get, Post, Middleware } from "../decorators";
     import { isAdmin, logger } from "../middlewares";
@@ -142,13 +142,13 @@ Kodumuz şu anki haliyle TypeScript uyumlu, çalıştırdığınızda TypeScript
             `);
         }
     }
-
+```
 Günün sonunda ulaşmak istediğimiz kod yazım şekli bu olsun diyelim. Örnekte dikkatinizi çektiğini tahmin ettiğim `@Controller`, `@Get`, `@Post` ve `@Middleware` decorator'leri yer almakta. İşte bu decorator'leri oluşturarak bir TypeScript class'ına controller vazifesi yüklüyor olacağız. Class içerisinde tanımladığımız metodları da yine çeşitli decorator'ler ile `request handler` olarak atayacağız. Benzer şekilde `@Middleware` decorator factory'si ile request controller'a ulaşmadan onu istediğimiz middleware'lerden seçtiğimiz sıra ile geçirebileceğiz.
 
 Decorator factory'ler invoke edildiklerinde decorator dönen fonksiyonlar basitçe. Bu örnekte kullandığımız tüm yapılar birer decorator factory. Çeşitli parametreler alıyorlar ya da alabilir durumdalar ve sonuçta UserController class'ını ve bu class'a ait metodları manipüle etmemizi sağlayan decorator'leri dönüyorlar. TypeScript'te beş çeşit decorator var: class, method, accessor, property ve parameter decorator'leri. Bu yazıda class ve method örneklerini inceliyor olacağız.
 
 Controller'a ait metodların birer request handler olmasını sağlayan decorator'ümüzle başlayalım:
-
+```javascript
     import { HttpMethods, ControllerDecoratorParams } from "../enums";
     
     function createRouteMethod(method: HttpMethods) {
@@ -165,11 +165,11 @@ Controller'a ait metodların birer request handler olmasını sağlayan decorato
     export const Put = createRouteMethod(HttpMethods.Put);
     export const Patch = createRouteMethod(HttpMethods.Patch);
     export const Delete = createRouteMethod(HttpMethods.Delete);
-
+```
 Aslında yaptığı son derece basit: Tüm HTTP metodları için teker teker yazmaktansa günün sonunda kullanacağımız decorator factory'yi dönen `createRouteMethod` adında bir fonksiyonumuz var. 'get', 'post' gibi bir string değer alıyor aslında, TypeScript dünyasında olduğumuz için bu parametreleri bir enum üzerinden yönetme şansımız var. Decorator factory'nin kendisi bir `path` parametresi alıyor, '/user' path'ine GET request'i yapılıyor gibi düşünebilirsiniz, ve decorator'ün kendisini dönüyor nihayetinde. Decorator fonksiyonunun içerisinde de dışarıdan aldığımız `path` ve hangi HTTP metodunu karşıladığımızı gösteren `method` parametrelerini daha sonra kullanmak üzere metadata olarak saklıyoruz 
 
 Request handler bazlı middleware yapısını kullanmamızı sağlayan decorator emsalimiz ise şu şekilde:
-
+```javascript
     import { ControllerDecoratorParams } from "../enums";
     import { RequestHandler } from "express";
     
@@ -178,11 +178,11 @@ Request handler bazlı middleware yapısını kullanmamızı sağlayan decorator
             Reflect.defineMetadata(ControllerDecoratorParams.Middleware, middlewares, target, propertyKey);
         }
     }
-
+```
 Bu decorator factory'ye de istediğimiz middleware fonksiyonlarını (klasik middleware fonksiyonları olarak düşünün bunları) bir Array olarak veriyoruz ve nihayetinde yine metadata olarak bu Array'i saklıyoruz.
 
 Sakladığımız bu bilgiyi runtime'ın başında UserController class'ımızın işleyip kurduğumuz mimarinin çalışmasını sağlayacak ana unsur ise @Controller decorator'ü:
-
+```javascript
     import { AppRouter } from "../router/AppRouter";
     import { HttpMethods, ControllerDecoratorParams } from "../enums";
     import { RequestHandler } from "express";
@@ -202,12 +202,12 @@ Sakladığımız bu bilgiyi runtime'ın başında UserController class'ımızın
             }
         }
     }
-
+```
 Burada UserController class'ına tanımladığımız tüm metodları dönüyor ve herbiri için eğer varsa tanımlı metadata'yı dışarı çıkarıp istediğimiz tanımlamaları singleton olarak tasarladığımız router'ımız yardımıyla yapıyoruz. Burada dinamik olarak yaptığımız şey aşağıdaki çıktıyı oluşturuyor:
-
+```javascript
     router.get('/user', [], getUser);
     router.post('/user', [logger, isAdmin], postUser);
-
+```
 İfade etmeye çalıştığım yapının benzerleri ve çok daha profesyonelce hazırlanmış, kullanılabilir halleri için [Nest.js](https://nestjs.com), [Ts.ED](https://tsed.io) gibi popüler projeleri inceleyebilirsiniz.
 
 Bu yazıda kod kullandığım projeye [https://github.com/doganozturk/express-typescript-decorators](https://github.com/doganozturk/express-typescript-decorators) adresi üzerinden ulaşabilir, inceleyebilirsiniz.
