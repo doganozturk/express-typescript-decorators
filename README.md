@@ -12,136 +12,136 @@ Açıkçası anlatmaya başlayacağım bu örneğe benzer/yakın başka çalış
 
 Başlangıç uygulamamız temel TypeScript boilerplate'i üzerine çok basit bir Express.js örneği:
 ```javascript
-    import express, { Request, Response, Router } from "express";
-    import bodyParser from 'body-parser';
-    
-    const app = express();
-    const port = process.env.PORT || 3000;
-    const router = Router();
-    
-    app.use(bodyParser.urlencoded({ extended: true }));
-    
-    router.get('/user', (req: Request, res: Response): void => {
-    	res.send(`
-        <div>
-            <form action="/user" method="post">
-                <div>
-                    <label for="name">Name:</label>
-                    <input type="text" name="name">
-                </div>
-                <div>
-                    <label for="email">Email:</label>
-                    <input type="email" name="email">
-                </div>
-                <div>
-                    <label for="age">Age:</label>
-                    <input type="number" name="age">
-                </div>
-                <div>
-                    <label for="address">Address:</label>
-                    <input type="text" name="address">
-                </div>
-                <button>SEND</button>
-            </form>
-        </div>
-    	`);
-    });
-    
-    router.post('/user', (req: Request, res: Response): void => {
-    	const { name, email, age, address } = req.body;
-    
-      res.send(`
-          <div>
-              <h1>USER INFO:</h1>
-              <p>
-                  Name: ${name}
-              </p>
-              <p>
-                  Email: ${email}
-              </p>
-              <p>
-                  Age: ${age}
-              </p>
-              <p>
-                  Address: ${address}
-              </p>
-              <p>
-                  Is Admin: ${!!res.locals.isAdmin}
-              </p>
-          </div>
-      `);
-    });
-    
-    app.use(router);
-    
-    app.listen(port, (): void => {
-        console.log(`Server started on port ${port}`);
-    });
+import express, { Request, Response, Router } from "express";
+import bodyParser from 'body-parser';
+
+const app = express();
+const port = process.env.PORT || 3000;
+const router = Router();
+
+app.use(bodyParser.urlencoded({ extended: true }));
+
+router.get('/user', (req: Request, res: Response): void => {
+    res.send(`
+    <div>
+        <form action="/user" method="post">
+            <div>
+                <label for="name">Name:</label>
+                <input type="text" name="name">
+            </div>
+            <div>
+                <label for="email">Email:</label>
+                <input type="email" name="email">
+            </div>
+            <div>
+                <label for="age">Age:</label>
+                <input type="number" name="age">
+            </div>
+            <div>
+                <label for="address">Address:</label>
+                <input type="text" name="address">
+            </div>
+            <button>SEND</button>
+        </form>
+    </div>
+    `);
+});
+
+router.post('/user', (req: Request, res: Response): void => {
+    const { name, email, age, address } = req.body;
+
+    res.send(`
+      <div>
+          <h1>USER INFO:</h1>
+          <p>
+              Name: ${name}
+          </p>
+          <p>
+              Email: ${email}
+          </p>
+          <p>
+              Age: ${age}
+          </p>
+          <p>
+              Address: ${address}
+          </p>
+          <p>
+              Is Admin: ${!!res.locals.isAdmin}
+          </p>
+      </div>
+    `);
+});
+
+app.use(router);
+
+app.listen(port, (): void => {
+    console.log(`Server started on port ${port}`);
+});
 ```
 Görüldüğü üzere iki controller'ımız var. Bunlar `/user` path'inde GET ve POST isteklerini karşılıyorlar.
 
 Kodumuz şu anki haliyle TypeScript uyumlu, çalıştırdığınızda TypeScript compiler'ı hata vermeyecektir; ancak tabii TypeScript kullanıyorsak kodumuzun daha az prosedürel, daha fazla OOP özellikleri taşımasını istiyor olmalıyız. Haliyle aklımıza şöyle bir API üzerinden controller'ı dizayn etmek ve yönetmek gelebilir:
 ```javascript
-    import { Request, Response } from "express";
-    import { Controller, Get, Post, Middleware } from "../decorators";
-    import { isAdmin, logger } from "../middlewares";
-    
-    @Controller('/user')
-    export class UserController {
-        @Get()
-        getUser(req: Request, res: Response): void {
-            res.send(`
-                <div>
-                    <form action="/user" method="post">
-                        <div>
-                            <label for="name">Name:</label>
-                            <input type="text" name="name">
-                        </div>
-                        <div>
-                            <label for="email">Email:</label>
-                            <input type="email" name="email">
-                        </div>
-                        <div>
-                            <label for="age">Age:</label>
-                            <input type="number" name="age">
-                        </div>
-                        <div>
-                            <label for="address">Address:</label>
-                            <input type="text" name="address">
-                        </div>
-                        <button>SEND</button>
-                    </form>
-                </div>
-            `);
-        }
-    
-        @Post()
-        @Middleware([logger, isAdmin])
-        postUser(req: Request, res: Response): void {
-            const { name, email, age, address } = req.body;
-    
-            res.send(`
-                <div>
-                    <h1>USER INFO:</h1>
-                    <p>
-                        Name: ${name}
-                    </p>
-                    <p>
-                        Email: ${email}
-                    </p>
-                    <p>
-                        Age: ${age}
-                    </p>
-                    <p>
-                        Address: ${address}
-                    </p>
-                    <p>
-                        Is Admin: ${!!res.locals.isAdmin}
-                    </p>
-                </div>
-            `);
-        }
+import { Request, Response } from "express";
+import { Controller, Get, Post, Middleware } from "../decorators";
+import { isAdmin, logger } from "../middlewares";
+
+@Controller('/user')
+export class UserController {
+    @Get()
+    getUser(req: Request, res: Response): void {
+        res.send(`
+            <div>
+                <form action="/user" method="post">
+                    <div>
+                        <label for="name">Name:</label>
+                        <input type="text" name="name">
+                    </div>
+                    <div>
+                        <label for="email">Email:</label>
+                        <input type="email" name="email">
+                    </div>
+                    <div>
+                        <label for="age">Age:</label>
+                        <input type="number" name="age">
+                    </div>
+                    <div>
+                        <label for="address">Address:</label>
+                        <input type="text" name="address">
+                    </div>
+                    <button>SEND</button>
+                </form>
+            </div>
+        `);
     }
+
+    @Post()
+    @Middleware([logger, isAdmin])
+    postUser(req: Request, res: Response): void {
+        const { name, email, age, address } = req.body;
+
+        res.send(`
+            <div>
+                <h1>USER INFO:</h1>
+                <p>
+                    Name: ${name}
+                </p>
+                <p>
+                    Email: ${email}
+                </p>
+                <p>
+                    Age: ${age}
+                </p>
+                <p>
+                    Address: ${address}
+                </p>
+                <p>
+                    Is Admin: ${!!res.locals.isAdmin}
+                </p>
+            </div>
+        `);
+    }
+}
 ```
 Günün sonunda ulaşmak istediğimiz kod yazım şekli bu olsun diyelim. Örnekte dikkatinizi çektiğini tahmin ettiğim `@Controller`, `@Get`, `@Post` ve `@Middleware` decorator'leri yer almakta. İşte bu decorator'leri oluşturarak bir TypeScript class'ına controller vazifesi yüklüyor olacağız. Class içerisinde tanımladığımız metodları da yine çeşitli decorator'ler ile `request handler` olarak atayacağız. Benzer şekilde `@Middleware` decorator factory'si ile request controller'a ulaşmadan onu istediğimiz middleware'lerden seçtiğimiz sıra ile geçirebileceğiz.
 
@@ -149,64 +149,64 @@ Decorator factory'ler invoke edildiklerinde decorator dönen fonksiyonlar basit�
 
 Controller'a ait metodların birer request handler olmasını sağlayan decorator'ümüzle başlayalım:
 ```javascript
-    import { HttpMethods, ControllerDecoratorParams } from "../enums";
-    
-    function createRouteMethod(method: HttpMethods) {
-        return function(path?: string): Function {
-            return function(target: any, propertyKey: string): void {
-                Reflect.defineMetadata(ControllerDecoratorParams.Path, path, target, propertyKey);
-                Reflect.defineMetadata(ControllerDecoratorParams.Method, method, target, propertyKey);
-            }
+import { HttpMethods, ControllerDecoratorParams } from "../enums";
+
+function createRouteMethod(method: HttpMethods) {
+    return function(path?: string): Function {
+        return function(target: any, propertyKey: string): void {
+            Reflect.defineMetadata(ControllerDecoratorParams.Path, path, target, propertyKey);
+            Reflect.defineMetadata(ControllerDecoratorParams.Method, method, target, propertyKey);
         }
     }
-    
-    export const Get = createRouteMethod(HttpMethods.Get);
-    export const Post = createRouteMethod(HttpMethods.Post);
-    export const Put = createRouteMethod(HttpMethods.Put);
-    export const Patch = createRouteMethod(HttpMethods.Patch);
-    export const Delete = createRouteMethod(HttpMethods.Delete);
+}
+
+export const Get = createRouteMethod(HttpMethods.Get);
+export const Post = createRouteMethod(HttpMethods.Post);
+export const Put = createRouteMethod(HttpMethods.Put);
+export const Patch = createRouteMethod(HttpMethods.Patch);
+export const Delete = createRouteMethod(HttpMethods.Delete);
 ```
 Aslında yaptığı son derece basit: Tüm HTTP metodları için teker teker yazmaktansa günün sonunda kullanacağımız decorator factory'yi dönen `createRouteMethod` adında bir fonksiyonumuz var. 'get', 'post' gibi bir string değer alıyor aslında, TypeScript dünyasında olduğumuz için bu parametreleri bir enum üzerinden yönetme şansımız var. Decorator factory'nin kendisi bir `path` parametresi alıyor, '/user' path'ine GET request'i yapılıyor gibi düşünebilirsiniz, ve decorator'ün kendisini dönüyor nihayetinde. Decorator fonksiyonunun içerisinde de dışarıdan aldığımız `path` ve hangi HTTP metodunu karşıladığımızı gösteren `method` parametrelerini daha sonra kullanmak üzere metadata olarak saklıyoruz 
 
 Request handler bazlı middleware yapısını kullanmamızı sağlayan decorator emsalimiz ise şu şekilde:
 ```javascript
-    import { ControllerDecoratorParams } from "../enums";
-    import { RequestHandler } from "express";
-    
-    export function Middleware(middlewares: RequestHandler[]): Function {
-        return function(target: any, propertyKey: string): void {
-            Reflect.defineMetadata(ControllerDecoratorParams.Middleware, middlewares, target, propertyKey);
-        }
+import { ControllerDecoratorParams } from "../enums";
+import { RequestHandler } from "express";
+
+export function Middleware(middlewares: RequestHandler[]): Function {
+    return function(target: any, propertyKey: string): void {
+        Reflect.defineMetadata(ControllerDecoratorParams.Middleware, middlewares, target, propertyKey);
     }
+}
 ```
 Bu decorator factory'ye de istediğimiz middleware fonksiyonlarını (klasik middleware fonksiyonları olarak düşünün bunları) bir Array olarak veriyoruz ve nihayetinde yine metadata olarak bu Array'i saklıyoruz.
 
 Sakladığımız bu bilgiyi runtime'ın başında UserController class'ımızın işleyip kurduğumuz mimarinin çalışmasını sağlayacak ana unsur ise @Controller decorator'ü:
 ```javascript
-    import { AppRouter } from "../router/AppRouter";
-    import { HttpMethods, ControllerDecoratorParams } from "../enums";
-    import { RequestHandler } from "express";
-    
-    export function Controller(path: string): Function {
-        return function(target: any): void {
-            const router = AppRouter.router;
-    
-            for (const _action in target.prototype) {
-                if (target.prototype.hasOwnProperty(_action)) {
-                    const _path: string = Reflect.getMetadata(ControllerDecoratorParams.Path, target.prototype, _action) || '';
-                    const method: HttpMethods = Reflect.getMetadata(ControllerDecoratorParams.Method, target.prototype, _action);
-                    const middlewares: RequestHandler[] = Reflect.getMetadata(ControllerDecoratorParams.Middleware, target.prototype, _action) || [];
-    
-                    router[method](`${path}${_path}`, middlewares, target.prototype[_action]);
-                }
+import { AppRouter } from "../router/AppRouter";
+import { HttpMethods, ControllerDecoratorParams } from "../enums";
+import { RequestHandler } from "express";
+
+export function Controller(path: string): Function {
+    return function(target: any): void {
+        const router = AppRouter.router;
+
+        for (const _action in target.prototype) {
+            if (target.prototype.hasOwnProperty(_action)) {
+                const _path: string = Reflect.getMetadata(ControllerDecoratorParams.Path, target.prototype, _action) || '';
+                const method: HttpMethods = Reflect.getMetadata(ControllerDecoratorParams.Method, target.prototype, _action);
+                const middlewares: RequestHandler[] = Reflect.getMetadata(ControllerDecoratorParams.Middleware, target.prototype, _action) || [];
+
+                router[method](`${path}${_path}`, middlewares, target.prototype[_action]);
             }
         }
     }
+}
 ```
 Burada UserController class'ına tanımladığımız tüm metodları dönüyor ve herbiri için eğer varsa tanımlı metadata'yı dışarı çıkarıp istediğimiz tanımlamaları singleton olarak tasarladığımız router'ımız yardımıyla yapıyoruz. Burada dinamik olarak yaptığımız şey aşağıdaki çıktıyı oluşturuyor:
 ```javascript
-    router.get('/user', [], getUser);
-    router.post('/user', [logger, isAdmin], postUser);
+router.get('/user', [], getUser);
+router.post('/user', [logger, isAdmin], postUser);
 ```
 İfade etmeye çalıştığım yapının benzerleri ve çok daha profesyonelce hazırlanmış, kullanılabilir halleri için [Nest.js](https://nestjs.com), [Ts.ED](https://tsed.io) gibi popüler projeleri inceleyebilirsiniz.
 
